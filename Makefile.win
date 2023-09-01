@@ -1,0 +1,2 @@
+build: tst.c
+	cl.exe tst.c /lib "C:\libs\SDL2.lib"
