@@ -15,7 +15,7 @@
 const int point_size = 10;
 const int radius = 100;
 
-void drawCircle(SDL_Surface *surf, float radius, SDL_Point center, uint32_t color)
+void drawCircle(SDL_Renderer *ren, float radius, SDL_Point center, uint32_t color)
 {
     
     float x = 0;
@@ -30,55 +30,59 @@ void drawCircle(SDL_Surface *surf, float radius, SDL_Point center, uint32_t colo
             1, 
             1
         };
-        SDL_FillRect(surf, &point, color);
+        SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
+        SDL_RenderDrawRect(ren, &point);
     }
-    /* sin(M_PI * 2) */
 }
 
-void drawSpiningDot(SDL_Surface *surf, float radius, SDL_Point center, uint32_t color)
+void drawSpiningDot(SDL_Renderer *ren, float radius, SDL_Point center, uint32_t color)
 {
     
-    float x = 0;
-    float y = 0;
     static float i = 0;
     if (i >= 2 * M_PI) i = 0;
-    x = cos(2.0f * M_PI * i);
-    y = sin(2.0f * M_PI * i);
+    float radians = 2.0f * M_PI * i;
+    float x1 = cosf(radians) * radius;
+    float y1 = sinf(radians) * radius;
+    float x2 = x1 * cosf(radians) + y1 * sinf(radians);
+    float y2 = x1 * sinf(radians) - y1 * cosf(radians);
     SDL_Rect point = {
-        (x * radius) + center.x, 
-        (y * radius) + center.y,
+        x2 + center.x, y2 + center.y,
         point_size, 
         point_size
     };
-    SDL_FillRect(surf, &point, color);
+    /* SDL_FillRect(surf, &point, color); */
+    SDL_SetRenderDrawColor(ren, 255, 0, 0, 255);
+    SDL_RenderDrawRect(ren, &point);
     i += (2 * (float)M_PI) / FRAME_COUNT;
 }
 
-void updateToFPS(SDL_Window *win, SDL_Surface *surf, uint8_t fps, void (*callback)
-                                      (SDL_Window *win, SDL_Surface *surf))
+void updateToFPS(SDL_Renderer *ren, uint8_t fps, void (*callback)
+                                      (SDL_Renderer *ren))
 {
     uint32_t goal_mspf = 1000 / fps;
 
     uint32_t start = SDL_GetTicks();
-    callback(win, surf);
+    callback(ren);
     uint32_t end = SDL_GetTicks();
     uint32_t elapsed_time = end - start;
     if (elapsed_time < goal_mspf) SDL_Delay(goal_mspf - elapsed_time);
 }
 
-void update(SDL_Window *win, SDL_Surface *surf)
+void update(SDL_Renderer *ren)
 {
 
-    /* SDL_Rect rect = { 0, 0, 200, 200 }; */
-
-
-    SDL_FillRect(surf, NULL, 0xFFFFFFFF);
+    static int frame_number = 0;
+    SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+    SDL_RenderClear(ren);
     SDL_Point center1 = {125, 125};
-    drawCircle(surf, radius, center1, 0x00000000);
+    drawCircle(ren, radius, center1, 0x00000000);
 
     SDL_Point center2 = {125 - (point_size / 2), 125 - (point_size / 2)};
-    drawSpiningDot(surf, radius, center2, 0x00FF0000);
-    SDL_UpdateWindowSurface(win);
+    drawSpiningDot(ren, radius, center2, 0x00FF0000);
+    SDL_Delay(4000);
+    printf("%d\n", frame_number);
+    SDL_RenderPresent(ren);
+    frame_number = (frame_number + 1) % FRAME_COUNT;
 
 }
 
@@ -92,59 +96,15 @@ int main(void)
         exit(1);
     }
     SDL_Window *win = SDL_CreateWindow("Measuring Rotational Speed", 100, 100,
-                                       800, 800, SDL_WINDOW_SHOWN);
+                                       250, 250, SDL_WINDOW_SHOWN);
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE);
-
-    /* SDL_Surface *surf = SDL_GetWindowSurface(win); */
-    SDL_Surface *backsurf = SDL_CreateRGBSurface(0, 250, 250, 32, 0, 0, 0, 0);
-
     SDL_Event event;
     bool quit = false;
     float i = 0;
     while(!quit) {
 
-        updateToFPS(win, backsurf, FPS, update);
-        SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, backsurf);
-        SDL_Rect r1 = {
-            .x = 0, .y = 0, .w = 250, .h = 250
-        };
-        SDL_Rect r2 = {
-            .x = 275, .y = 275, .w = 250, .h = 250
-        };
-        SDL_Point center = {125, 125};
-
-        /* float radians = (float)(2 * M_PI) / 8.0f; */
-
-        float degrees = i * (180.0f / (float)M_PI);
-        SDL_RenderCopyEx(ren, tex, &r1, &r2, degrees, &center, SDL_FLIP_VERTICAL | SDL_FLIP_HORIZONTAL);
-        SDL_RenderPresent(ren);
-        /* SDL_Delay(1000); */
-        if (!tex) {
-            fprintf(stderr, "could not create texture");
-            exit(1);
-        }
-        /* SDL_BlitSurface(backsurf,  NULL, surf, &r2); */
-        /* SDL_UpdateWindowSurface(win); */
-        while(SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_QUIT: quit = true; break;
-                case SDL_KEYDOWN: 
-                {
-                        
-                    switch(event.key.keysym.sym) {
-                        case SDLK_q: 
-                        {
-                            quit = true;
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-        SDL_DestroyTexture(tex);
-        i -= (2 * (float)M_PI) / FRAME_COUNT;
+        updateToFPS(ren,  FPS, update);
     }
-    SDL_FreeSurface(backsurf);
+    SDL_DestroyRenderer(ren);
     SDL_Quit();
 }
