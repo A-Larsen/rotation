@@ -14,6 +14,7 @@
 /* #define M_PI 3.14159265359 */
 const int point_size = 10;
 const int radius = 100;
+bool quit = false;
 
 void drawCircle(SDL_Renderer *ren, float radius, SDL_Point center, uint32_t color)
 {
@@ -45,14 +46,25 @@ void drawSpiningDot(SDL_Renderer *ren, float radius, SDL_Point center, uint32_t 
     float y1 = sinf(radians) * radius;
     float x2 = x1 * cosf(radians) + y1 * sinf(radians);
     float y2 = x1 * sinf(radians) - y1 * cosf(radians);
-    SDL_Rect point = {
+    float x3 = x1 * cosf(radians) - y1 * sinf(radians);
+    float y3 = x1 * sinf(radians) + y1 * cosf(radians);
+    SDL_Rect point1 = {
+        x1 + center.x, y1 + center.y,
+        point_size, 
+        point_size
+    };
+    SDL_Rect point2 = {
         x2 + center.x, y2 + center.y,
         point_size, 
         point_size
     };
-    /* SDL_FillRect(surf, &point, color); */
+    SDL_Rect point3 = {
+        x3 + center.x, y3 + center.y,
+        point_size, 
+        point_size
+    };
     SDL_SetRenderDrawColor(ren, 255, 0, 0, 255);
-    SDL_RenderDrawRect(ren, &point);
+    SDL_RenderDrawRect(ren, &point1);
     i += (2 * (float)M_PI) / FRAME_COUNT;
 }
 
@@ -79,10 +91,26 @@ void update(SDL_Renderer *ren)
 
     SDL_Point center2 = {125 - (point_size / 2), 125 - (point_size / 2)};
     drawSpiningDot(ren, radius, center2, 0x00FF0000);
-    SDL_Delay(4000);
-    printf("%d\n", frame_number);
     SDL_RenderPresent(ren);
     frame_number = (frame_number + 1) % FRAME_COUNT;
+    SDL_Event event;
+    while(SDL_PollEvent(&event)) {
+        switch (event.type) {
+            case SDL_QUIT: quit = true; break;
+            case SDL_KEYDOWN: 
+            {
+                    
+                switch(event.key.keysym.sym) {
+                    case SDLK_q: 
+                    {
+                        quit = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
 
 }
 
@@ -99,7 +127,6 @@ int main(void)
                                        250, 250, SDL_WINDOW_SHOWN);
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_SOFTWARE);
     SDL_Event event;
-    bool quit = false;
     float i = 0;
     while(!quit) {
 
