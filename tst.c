@@ -42,6 +42,13 @@ void drawSpiningDot(SDL_Renderer *ren, float radius, SDL_Point center, uint32_t 
     static float i = 0;
     if (i >= 2 * M_PI) i = 0;
     float radians = 2.0f * M_PI * i;
+    // point1 -> show the default clockwise rotation
+    //
+    // point2 -> show the default clockwise rotation, then rotating it
+    //           clockwise again at the same degrees in radians
+    //
+    // point3 -> show the default clockwise rotation, then rotating it
+    //           anticlockwise again at the same degrees in radians
     float x1 = cosf(radians) * radius;
     float y1 = sinf(radians) * radius;
     float x2 = x1 * cosf(radians) + y1 * sinf(radians);
@@ -64,7 +71,7 @@ void drawSpiningDot(SDL_Renderer *ren, float radius, SDL_Point center, uint32_t 
         point_size
     };
     SDL_SetRenderDrawColor(ren, 255, 0, 0, 255);
-    SDL_RenderDrawRect(ren, &point1);
+    SDL_RenderDrawRect(ren, &point2);
     i += (2 * (float)M_PI) / FRAME_COUNT;
 }
 
