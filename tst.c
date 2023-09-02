@@ -9,8 +9,8 @@
 #include <stdlib.h>
 
 #define SDL_main main
-#define FRAME_COUNT 16
-#define FPS 16
+#define FRAME_COUNT 60
+#define FPS 5
 /* #define M_PI 3.14159265359 */
 const int point_size = 10;
 const int radius = 100;
@@ -32,7 +32,7 @@ void drawCircle(SDL_Renderer *ren, float radius, SDL_Point center, uint32_t colo
             1
         };
         SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
-        SDL_RenderDrawRect(ren, &point);
+        SDL_RenderFillRect(ren, &point);
     }
 }
 
@@ -51,8 +51,10 @@ void drawSpiningDot(SDL_Renderer *ren, float radius, SDL_Point center, uint32_t 
     //           anticlockwise again at the same degrees in radians
     float x1 = cosf(radians) * radius;
     float y1 = sinf(radians) * radius;
+
     float x2 = x1 * cosf(radians) + y1 * sinf(radians);
     float y2 = x1 * sinf(radians) - y1 * cosf(radians);
+
     float x3 = x1 * cosf(radians) - y1 * sinf(radians);
     float y3 = x1 * sinf(radians) + y1 * cosf(radians);
     SDL_Rect point1 = {
@@ -71,7 +73,11 @@ void drawSpiningDot(SDL_Renderer *ren, float radius, SDL_Point center, uint32_t 
         point_size
     };
     SDL_SetRenderDrawColor(ren, 255, 0, 0, 255);
-    SDL_RenderDrawRect(ren, &point2);
+    SDL_RenderFillRect(ren, &point1);
+    SDL_SetRenderDrawColor(ren, 0, 255, 0, 255);
+    SDL_RenderFillRect(ren, &point2);
+    SDL_SetRenderDrawColor(ren, 0, 0, 255, 255);
+    SDL_RenderFillRect(ren, &point3);
     i += (2 * (float)M_PI) / FRAME_COUNT;
 }
 
