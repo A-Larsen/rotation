@@ -31,7 +31,7 @@ void drawCircle(SDL_Renderer *ren, float radius, SDL_Point center, uint32_t colo
             1, 
             1
         };
-        SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
+        SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
         SDL_RenderFillRect(ren, &point);
     }
 }
@@ -44,19 +44,18 @@ void drawSpiningDot(SDL_Renderer *ren, float radius, SDL_Point center, uint32_t 
     float radians = 2.0f * M_PI * i;
     // point1 -> show the default clockwise rotation
     //
-    // point2 -> show the default clockwise rotation, then rotating it
-    //           clockwise again at the same degrees in radians
+    // point2 -> rotate point1 clockwise at the same degrees in radians as point1
     //
-    // point3 -> show the default clockwise rotation, then rotating it
-    //           anticlockwise again at the same degrees in radians
+    // point3 -> rotate point1 anticlockwise at the half a turn
     float x1 = cosf(radians) * radius;
     float y1 = sinf(radians) * radius;
 
     float x2 = x1 * cosf(radians) + y1 * sinf(radians);
     float y2 = x1 * sinf(radians) - y1 * cosf(radians);
 
-    float x3 = x1 * cosf(radians) - y1 * sinf(radians);
-    float y3 = x1 * sinf(radians) + y1 * cosf(radians);
+    float x3 = x1 * cosf(M_PI) - y1 * sinf(M_PI);
+    float y3 = x1 * sinf(M_PI) + y1 * cosf(M_PI);
+
     SDL_Rect point1 = {
         x1 + center.x, y1 + center.y,
         point_size, 
@@ -97,7 +96,7 @@ void update(SDL_Renderer *ren)
 {
 
     static int frame_number = 0;
-    SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
     SDL_RenderClear(ren);
     SDL_Point center1 = {125, 125};
     drawCircle(ren, radius, center1, 0x00000000);
